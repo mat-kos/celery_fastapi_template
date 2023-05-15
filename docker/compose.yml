@@ -1,0 +1,68 @@
+version: '3.6'
+
+
+services:
+  rabbitmq:
+    image: bitnami/rabbitmq:3.9.11
+    restart: always
+    ports:
+      - "5001:5001"
+      - "5002:5002"
+    environment:
+      - RABBITMQ_USERNAME=user
+      - RABBITMQ_PASSWORD=password
+      - RABBITMQ_NODE_PORT_NUMBER=5001
+      - RABBITMQ_MANAGEMENT_PORT_NUMBER=5002
+    networks:
+      - default
+    volumes:
+      - rabbitmq_data:/bitnami
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmq-diagnostics -q check_running && rabbitmq-diagnostics -q check_local_alarms"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  redis:
+    image: bitnami/redis:7.0
+    restart: always
+    ports:
+      - "5003:5003"
+    environment:
+      - REDIS_PASSWORD=password
+      - REDIS_PORT_NUMBER=5003
+    volumes:
+      - redis_data:/bitnami/redis/data
+    networks:
+      - default
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -p $$REDIS_PORT_NUMBER -a $$REDIS_PASSWORD --no-auth-warning --raw incr ping"]
+
+  flower:
+    image: mher/flower:1.2
+    restart: always
+    ports:
+      - "5004:5004"
+    environment:
+      - CELERY_BROKER_URL=amqp://user:password@rabbitmq:5001//
+      - CELERY_RESULT_BACKEND=redis://:password@redis:5003/0/
+      - FLOWER_PORT=5004
+    networks:
+      - default
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:$$FLOWER_PORT/healthcheck || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+
+volumes:
+  rabbitmq_data:
+  redis_data:
+
+
+networks:
+  default:
+    attachable: True
