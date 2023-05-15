@@ -1,0 +1,1 @@
+Example of celery and fastapi integration.
