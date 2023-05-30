@@ -1,11 +1,22 @@
-from enum import StrEnum
 from pydantic import BaseSettings, AmqpDsn, RedisDsn
+
+
+# INTERNAL CONFIGURATION
+
+
+wire_packages = [
+    "src.routers.worker",
+    "src.async_tools"
+]
 
 
 routers_paths = [
     "src.routers.state.state_router",
     "src.routers.worker.worker_router"
 ]
+
+
+# USER CONFIGURATION
 
 
 class AppConfig(BaseSettings):
