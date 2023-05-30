@@ -10,5 +10,6 @@ routers_paths = [
 
 class AppConfig(BaseSettings):
     
+    pool_workers: int = 1
     broker_url: AmqpDsn = "amqp://user:password@localhost:5001//"
     backend_url: RedisDsn = "redis://:password@localhost:5003/0/"

@@ -1,5 +1,6 @@
 from celery import Celery
 from ..dto.worker import WorkerDTO
+from ..async_tools import run_async
 
 
 # usefull links:
@@ -14,6 +15,7 @@ class WorkerService:
     def __init__(self, celery_app: Celery) -> None:
         self.celery_app = celery_app
 
+    @run_async
     def list_workers(self) -> list[WorkerDTO]: 
         workers_plain_stats = self.celery_app.control.inspect().stats()
         return [
