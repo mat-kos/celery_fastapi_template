@@ -11,15 +11,22 @@ def _attach_routers(app: FastAPI, routers_paths: list[str]):
         app.include_router(router)
 
 
-def _dependency_injector_setup(config: AppConfig):
+def _setup_dependency_injector(config: AppConfig):
     app_container = AppContainer()
     app_container.config.from_pydantic(config)
     app_container.wire(packages=wire_packages)
     
 
-def create_app() -> FastAPI:
+def _build_server_config(config: AppConfig) -> dict:
+    return {
+        "port": config.port,
+        "host": config.host,
+    }
+
+
+def create_app() -> tuple[FastAPI, dict]:
     config = AppConfig()
     app = FastAPI()
-    _dependency_injector_setup(config)
-    _attach_routers(app, routers_paths) 
-    return app
+    _setup_dependency_injector(config)
+    _attach_routers(app, routers_paths)
+    return app, _build_server_config(config)
